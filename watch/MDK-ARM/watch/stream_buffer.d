@@ -1,0 +1,9 @@
+watch\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
+watch\stream_buffer.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+watch\stream_buffer.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\string.h
+watch\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+watch\stream_buffer.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
+watch\stream_buffer.o: ../Core/Inc/FreeRTOSConfig.h
+watch\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+watch\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+watch\stream_buffer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h

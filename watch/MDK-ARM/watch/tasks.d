@@ -1,0 +1,10 @@
+watch\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c
+watch\tasks.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+watch\tasks.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\string.h
+watch\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+watch\tasks.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
+watch\tasks.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+watch\tasks.o: ../Core/Inc/FreeRTOSConfig.h
+watch\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+watch\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+watch\tasks.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h

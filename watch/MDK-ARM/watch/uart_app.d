@@ -1,0 +1,9 @@
+watch\uart_app.o: ..\APP\uart_app.c
+watch\uart_app.o: ..\APP\uart_app.h
+watch\uart_app.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+watch\uart_app.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
+watch\uart_app.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+watch\uart_app.o: ../Core/Inc/FreeRTOSConfig.h
+watch\uart_app.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+watch\uart_app.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+watch\uart_app.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h

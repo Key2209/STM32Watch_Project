@@ -1,0 +1,10 @@
+watch\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/queue.c
+watch\queue.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+watch\queue.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\string.h
+watch\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+watch\queue.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
+watch\queue.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+watch\queue.o: ../Core/Inc/FreeRTOSConfig.h
+watch\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+watch\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+watch\queue.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h

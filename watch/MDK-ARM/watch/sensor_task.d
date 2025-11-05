@@ -1,0 +1,9 @@
+watch\sensor_task.o: ..\TASK\Sensor_Task.c
+watch\sensor_task.o: ..\TASK\Sensor_Task.h
+watch\sensor_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+watch\sensor_task.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
+watch\sensor_task.o: D:\stm32\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+watch\sensor_task.o: ../Core/Inc/FreeRTOSConfig.h
+watch\sensor_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+watch\sensor_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+watch\sensor_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
