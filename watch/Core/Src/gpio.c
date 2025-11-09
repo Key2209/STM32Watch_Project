@@ -52,12 +52,16 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, relay2_Pin|relay1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(motor1027_GPIO_Port, motor1027_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(WK2114_REST_GPIO_Port, WK2114_REST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : KEY2_Pin */
   GPIO_InitStruct.Pin = KEY2_Pin;
@@ -98,6 +102,23 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : WK2114_REST_Pin */
+  GPIO_InitStruct.Pin = WK2114_REST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(WK2114_REST_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : EXTI_WK2114_IRQn_Pin */
+  GPIO_InitStruct.Pin = EXTI_WK2114_IRQn_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(EXTI_WK2114_IRQn_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
 }
 

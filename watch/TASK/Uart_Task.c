@@ -32,7 +32,7 @@ void UART_Debug_RxProcessTask(void *pvParameters){
       
         // 【使用 RTOS 堆内存分配】
             uint8_t *local_processing_buffer = (uint8_t *)pvPortMalloc(data_len + 1);
-            
+            //uint8_t local_processing_buffer[data_len+1];
             if (local_processing_buffer == NULL) {
                 // 内存分配失败，直接跳过本次处理
                 continue; 
@@ -42,11 +42,13 @@ void UART_Debug_RxProcessTask(void *pvParameters){
       Uart1_Rx.Read_From_Circular_Buffer(&Uart1_Rx,local_processing_buffer, data_len, start_pos);
       local_processing_buffer[data_len] = '\0'; // 添加终止符
 
-      // 5. ** 执行耗时的业务逻辑！ **
-    UART_DMA_Send(&Uart1_Tx, (uint8_t *)local_processing_buffer, strlen((char*)local_processing_buffer), 100,
-                  false);
+    //   // 5. ** 执行耗时的业务逻辑！ **
+    // UART_DMA_Send(&Uart1_Tx, (uint8_t *)local_processing_buffer, strlen((char*)local_processing_buffer), 100,
+    //               false);
 
-        //Uart1_Tx.Send_DMA(&Uart1_Tx, (uint8_t *)message1, strlen((char *)message1), 100,false);
+        printf("Received Data (%d bytes): %s", data_len, local_processing_buffer);
+        // 4. !!! 关键：释放堆内存 !!!
+    vPortFree(local_processing_buffer);
     }
   }
 

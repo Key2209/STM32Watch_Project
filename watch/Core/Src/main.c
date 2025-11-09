@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -26,7 +26,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "APDS9900.h"
+#include "LIS3DH.h"
 #include "uart_app.h"
+#include "PCF8563.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +50,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+osMutexId_t i2cBusMutexHandle = NULL;
+osSemaphoreId_t i2cDmaCpltSemHandle = NULL;
 
 /* USER CODE END PV */
 
@@ -59,19 +64,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* USER CODE END 0 */
 
@@ -107,12 +99,38 @@ int main(void)
   MX_DMA_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  // === 在此处动态创建 RTOS 对象 ===
 
+  // 1. 创建互斥锁 (Mutex)
+  //    我们不需要特殊属性，所以传递 NULL
+  i2cBusMutexHandle = osMutexNew(NULL);
 
+  if (i2cBusMutexHandle == NULL) {
+    // 致命错误：Mutex 创建失败
+    // 通常是因为 FreeRTOS 堆空间不足 (configTOTAL_HEAP_SIZE)
+    Error_Handler();
+  }
 
-  UartTxStruct_Init(&Uart1_Tx,&huart1,20);// 初始化 UART1 发送结构体
+  // 2. 创建二值信号量 (Binary Semaphore)
+  //    API: osSemaphoreNew(max_count, initial_count, attributes)
+  //    我们需要的: Max Count = 1, Initial Count = 0
+  i2cDmaCpltSemHandle = osSemaphoreNew(1, 0, NULL);
+
+  if (i2cDmaCpltSemHandle == NULL) {
+    // 致命错误：Semaphore 创建失败
+    // 通常是因为 FreeRTOS 堆空间不足
+    Error_Handler();
+  }
+
+  // === 对象创建完毕 ===
+
+  UartTxStruct_Init(&Uart1_Tx, &huart1); // 初始化 UART1 发送结构体
+  APDS9900_Init(&hi2c1);
+  LIS3DH_Init(&hi2c1, 100);
+  PCF8563_Init(&hi2c1);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -128,8 +146,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -218,8 +235,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1)
-  {
+  while (1) {
   }
   /* USER CODE END Error_Handler_Debug */
 }
@@ -235,8 +251,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line
+     number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
+     line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

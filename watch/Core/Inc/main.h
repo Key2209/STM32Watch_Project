@@ -67,12 +67,17 @@ void Error_Handler(void);
 #define KEY3_GPIO_Port GPIOA
 #define motor1027_Pin GPIO_PIN_0
 #define motor1027_GPIO_Port GPIOB
+#define WK2114_REST_Pin GPIO_PIN_8
+#define WK2114_REST_GPIO_Port GPIOA
 #define debug_uart_tx_Pin GPIO_PIN_9
 #define debug_uart_tx_GPIO_Port GPIOA
 #define debug_uart_rx_Pin GPIO_PIN_10
 #define debug_uart_rx_GPIO_Port GPIOA
 #define relay1_Pin GPIO_PIN_12
 #define relay1_GPIO_Port GPIOC
+#define EXTI_WK2114_IRQn_Pin GPIO_PIN_2
+#define EXTI_WK2114_IRQn_GPIO_Port GPIOD
+#define EXTI_WK2114_IRQn_EXTI_IRQn EXTI2_IRQn
 #define APDS_SCL_Pin GPIO_PIN_8
 #define APDS_SCL_GPIO_Port GPIOB
 #define APDS_SDA_Pin GPIO_PIN_9

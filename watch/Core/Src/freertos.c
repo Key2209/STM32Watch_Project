@@ -58,15 +58,43 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t sensor_taskHandle;
 const osThreadAttr_t sensor_task_attributes = {
   .name = "sensor_task",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for UartDebugTask */
 osThreadId_t UartDebugTaskHandle;
 const osThreadAttr_t UartDebugTask_attributes = {
   .name = "UartDebugTask",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for Task_read_APDS9 */
+osThreadId_t Task_read_APDS9Handle;
+const osThreadAttr_t Task_read_APDS9_attributes = {
+  .name = "Task_read_APDS9",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Task_Read_LIS3D */
+osThreadId_t Task_Read_LIS3DHandle;
+const osThreadAttr_t Task_Read_LIS3D_attributes = {
+  .name = "Task_Read_LIS3D",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Task_read_PCF85 */
+osThreadId_t Task_read_PCF85Handle;
+const osThreadAttr_t Task_read_PCF85_attributes = {
+  .name = "Task_read_PCF85",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal,
+};
+/* Definitions for StartWk2114task */
+osThreadId_t StartWk2114taskHandle;
+const osThreadAttr_t StartWk2114task_attributes = {
+  .name = "StartWk2114task",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,6 +105,10 @@ const osThreadAttr_t UartDebugTask_attributes = {
 void StartDefaultTask(void *argument);
 void SensorTask(void *argument);
 void UART_Debug_RxProcessTask(void *argument);
+void Task_Read_APDS9900(void *argument);
+void Task_Read_LIS3DH(void *argument);
+void Task_Read_PCF8563(void *argument);
+void StartWk2114Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -115,6 +147,18 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of UartDebugTask */
   UartDebugTaskHandle = osThreadNew(UART_Debug_RxProcessTask, NULL, &UartDebugTask_attributes);
+
+  /* creation of Task_read_APDS9 */
+  Task_read_APDS9Handle = osThreadNew(Task_Read_APDS9900, NULL, &Task_read_APDS9_attributes);
+
+  /* creation of Task_Read_LIS3D */
+  Task_Read_LIS3DHandle = osThreadNew(Task_Read_LIS3DH, NULL, &Task_Read_LIS3D_attributes);
+
+  /* creation of Task_read_PCF85 */
+  Task_read_PCF85Handle = osThreadNew(Task_Read_PCF8563, NULL, &Task_read_PCF85_attributes);
+
+  /* creation of StartWk2114task */
+  StartWk2114taskHandle = osThreadNew(StartWk2114Task, NULL, &StartWk2114task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -178,6 +222,78 @@ __weak void UART_Debug_RxProcessTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END UART_Debug_RxProcessTask */
+}
+
+/* USER CODE BEGIN Header_Task_Read_APDS9900 */
+/**
+* @brief Function implementing the Task_read_APDS9 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Read_APDS9900 */
+__weak void Task_Read_APDS9900(void *argument)
+{
+  /* USER CODE BEGIN Task_Read_APDS9900 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Read_APDS9900 */
+}
+
+/* USER CODE BEGIN Header_Task_Read_LIS3DH */
+/**
+* @brief Function implementing the Task_Read_LIS3D thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Read_LIS3DH */
+__weak void Task_Read_LIS3DH(void *argument)
+{
+  /* USER CODE BEGIN Task_Read_LIS3DH */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Read_LIS3DH */
+}
+
+/* USER CODE BEGIN Header_Task_Read_PCF8563 */
+/**
+* @brief Function implementing the Task_read_PCF85 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Read_PCF8563 */
+__weak void Task_Read_PCF8563(void *argument)
+{
+  /* USER CODE BEGIN Task_Read_PCF8563 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Read_PCF8563 */
+}
+
+/* USER CODE BEGIN Header_StartWk2114Task */
+/**
+* @brief Function implementing the StartWk2114task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartWk2114Task */
+__weak void StartWk2114Task(void *argument)
+{
+  /* USER CODE BEGIN StartWk2114Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartWk2114Task */
 }
 
 /* Private application code --------------------------------------------------*/

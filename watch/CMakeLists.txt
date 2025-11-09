@@ -51,11 +51,19 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     APP/Key_class.c
     APP/uart_app.c
+    APP/i2c_dma_manager.c
+
+    APP/APDS9900.c
+    APP/LIS3DH.c
+    APP/PCF8563.c
+
+    APP/WK2114.c
+
 
 
     TASK/Sensor_Task.c
     TASK/Uart_Task.c
-    
+    TASK/WK2114_Task.c
 
     
 )
@@ -79,4 +87,11 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
 
     # Add user defined libraries
+
+
+
+)
+
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -u_printf_float
 )

@@ -1,15 +1,5 @@
 #include "uart_app.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h> // for memcpy
-
-// 使用 FreeRTOS 提供的内存管理函数
-#include "portable.h"
-
 // --- 全局和静态变量 ---
-
 // QueueHandle_t xRxDataQueue = NULL;
 // UART_HandleTypeDef *s_huart = NULL;
 //  DMA 环形缓冲区内存
@@ -177,125 +167,126 @@ void Read_From_Circular_Buffer(UartRxStruct *uartRxStruct, uint8_t *buffer,
 // =======================================================
 //                   发送接口 (Tx)
 // =======================================================
-// void UartTxStruct_TxCpltCallback(UartTxStruct
-// *uartTxStruct,UART_HandleTypeDef *huart); bool UART_DMA_Send(UartTxStruct
-// *uartTxStruct, uint8_t *data, uint16_t size, uint32_t timeout_ms, bool
-// dynamic_allocator);
-static void Handle_Tx_Request_Task(UartTxStruct *uartTxStruct);
+// -----------------------------------------------------------------------------
+//                                       UART TX Stream Buffer 配置
+// -----------------------------------------------------------------------------
 UartTxStruct Uart1_Tx = {0}; // 全局 UART1 发送结构体实例
 
-void UartTxStruct_Init(UartTxStruct *Uart_Tx, UART_HandleTypeDef *huart,
-                       uint8_t uart_tx_queue_len) {
+void UartTxTask(void *pvParameters);
+/* ---------------- 初始化 ---------------- */
+void UartTxStruct_Init(UartTxStruct *Uart_Tx, UART_HandleTypeDef *huart)
+{
+  configASSERT(Uart_Tx != NULL && huart != NULL);
 
-  // 1. 创建 FreeRTOS 资源
+    Uart_Tx->huart = huart;
 
-  Uart_Tx->xTxQueue = xQueueCreate(uart_tx_queue_len, sizeof(UartTxMsg_t));
-  if (Uart_Tx->xTxQueue == NULL) {
-    return;
-  }
-  // 2. 初始化 UartTxStruct 结构体
-  Uart_Tx->huart = huart;
-  Uart_Tx->is_busy = false;
-  Uart_Tx->current_msg.data = NULL;
-  Uart_Tx->current_msg.size = 0;
-  Uart_Tx->current_msg.is_dynamic = false;
 
-  Uart_Tx->Send_DMA = UART_DMA_Send;
-  Uart_Tx->TxCpltCallback = UartTxStruct_TxCpltCallback;
+    Uart_Tx->xTxStreamBuffer = xStreamBufferCreateStatic(
+        UART_STREAM_SIZE,
+        1,
+        Uart_Tx->ucStreamBufferStorage,
+        &Uart_Tx->xTxStreamBufferStruct);
+    configASSERT(Uart_Tx->xTxStreamBuffer != NULL);
+
+
+    /* 创建 tx task，并把 Uart_Tx 作为参数传入 */
+    BaseType_t x = xTaskCreate(
+        UartTxTask,
+        "UartTx",
+        UART_TASK_STACK,
+        (void *)Uart_Tx,   // 这里传入指针（非常重要）
+        UART_TASK_PRIO,
+        &Uart_Tx->xTxDriveTaskHandle); // 保存任务句柄到结构体
+    configASSERT(x == pdPASS);
+
+    Uart_Tx->Uart_Send = Uart_Send;
+    Uart_Tx->Uart_SendFromISR = Uart_SendFromISR;
+    Uart_Tx->UartTxStruct_TxCpltCallback= UartTxStruct_TxCpltCallback;
 }
 
-/*
-  * @brief 应用层发送接口（非阻塞，将数据放入队列）
-  * @param data 待发送数据指针
-  * @param size 待发送数据大小
-  * @param timeout_ms 等待队列空间的超时时间（ms）
-  * @param dynamic_allocator 是否是动态分配的数据（需要 TxCpltCallback 释放）
-  * @retval true: 发送请求成功放入队列; false: 队列满
-  使用该函数请求发送数据，
-  如果是第一次请求(空闲) 调用Handle_Tx_Request_Task();启动发送链条。
-  该函数会启动DMA发送，发送完成后会调用HAL_UART_TxCpltCallback回调函数，
-  此时队列的数据就会在回调函数中被再次发送
- */
-bool UART_DMA_Send(UartTxStruct *uartTxStruct, uint8_t *data, uint16_t size,
-                   uint32_t timeout_ms, bool dynamic_allocator) {
-  UartTxMsg_t msg = {data, size, dynamic_allocator};
-  TickType_t ticks = pdMS_TO_TICKS(timeout_ms);
-  QueueHandle_t xTxQueue = uartTxStruct->xTxQueue;
-  // 1. 将发送请求放入队列 (非阻塞操作)
-  if (xQueueSend(xTxQueue, &msg, ticks) != pdPASS) {
-    // 队列满，xQueueSend发送失败则返回false,直接退出函数
-    return false;
-  }
-
-  // 2. 检查并启动发送链条
-  // 仅当 UART 处于 READY 或 ERROR 状态时（即当前没有 DMA
-  // 正在进行），才需要手动启动。 注意：HAL_UART_STATE_READY 代表设备空闲。
-  UART_HandleTypeDef *s_huart = uartTxStruct->huart;
-  if (s_huart->gState == HAL_UART_STATE_READY ||
-      s_huart->gState == HAL_UART_STATE_ERROR) {
-    // 直接调用启动函数。因为 DMA 状态检查本身是原子性的（读取一个寄存器），
-    // 且 DMA 状态转换为 BUSY 发生在 HAL_UART_Transmit_DMA 内部，
-    // 极大地降低了与 TxCpltCallback 之间的竞态风险。
-    Handle_Tx_Request_Task(uartTxStruct);
-  }
-
-  return true; // 请求成功放入队列
+/* ---------------- 生产者 API（用于在任务上下文写入） ---------------- */
+BaseType_t Uart_Send(UartTxStruct *Uart_Tx,const uint8_t *data, size_t len)
+{
+    if (Uart_Tx->xTxStreamBuffer == NULL) return pdFALSE;
+    size_t sent = xStreamBufferSend(Uart_Tx->xTxStreamBuffer, (void *)data, (size_t)len, SEND_BLOCK_TICKS);
+    return (sent == len) ? pdTRUE : pdFALSE;
 }
 
-/**
- * @brief 处理发送请求（非 ISR，启动 DMA）
- * * 目标：启动发送链条的第一块数据
- */
-static void Handle_Tx_Request_Task(UartTxStruct *uartTxStruct) {
-  UartTxMsg_t next_msg;
-  QueueHandle_t xTxQueue = uartTxStruct->xTxQueue;
-
-  // 尝试从队列中获取下一块数据（非阻塞）
-  if (xQueueReceive(xTxQueue, &next_msg, 0) == pdPASS) {
-    // 保存当前消息信息（供 TxCpltCallback 使用）
-    uartTxStruct->current_msg = next_msg;
-    // 启动 DMA 发送
-    UART_HandleTypeDef *s_huart = uartTxStruct->huart;
-    HAL_UART_Transmit_DMA(s_huart, next_msg.data, next_msg.size);
-  }
+/* ISR 里写入的 API */
+BaseType_t Uart_SendFromISR(UartTxStruct *Uart_Tx,const uint8_t *data, size_t len, BaseType_t *pxHigherPriorityTaskWoken)
+{
+    if (Uart_Tx->xTxStreamBuffer  == NULL) return pdFALSE;
+    size_t sent = xStreamBufferSendFromISR(Uart_Tx->xTxStreamBuffer , (void *)data, (size_t)len, pxHigherPriorityTaskWoken);
+    return (sent == len) ? pdTRUE : pdFALSE;
 }
 
-// =======================================================
-//                DMA 发送完成回调 (ISR 核心 - Tx)
-// =======================================================
+/* ---------------- tx task（消费者）实现 ---------------- */
+void UartTxTask(void *pvParameters)
+{   
+ UartTxStruct *uart = (UartTxStruct *)pvParameters;
+    configASSERT(uart != NULL);
 
-/**
- * @brief HAL 库发送完成回调函数 (由 DMA 中断触发)
- * * 目标：释放内存，接力启动下一块数据
- */
-void UartTxStruct_TxCpltCallback(UartTxStruct *uartTxStruct,
-                                 UART_HandleTypeDef *huart) {
-  if (huart->Instance != uartTxStruct->huart->Instance) {
-    return; // 不是我们关心的 UART 实例
-  }
+    for (;;)
+    {
+        /* 从 StreamBuffer 读取到本地缓冲区（不要使用 StreamBuffer 的底层存储区） */
+        size_t xReceived = xStreamBufferReceive(
+            uart->xTxStreamBuffer,
+            uart->tx_local_buf,
+            sizeof(uart->tx_local_buf),
+            portMAX_DELAY
+        );
 
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  UartTxMsg_t next_msg;
+        if (xReceived == 0) {
+            continue;
+        }
 
-  UART_HandleTypeDef *s_huart = uartTxStruct->huart;
-  // 1. 内存管理：释放前一块数据（如果它是动态分配的）
-  if (uartTxStruct->current_msg.is_dynamic &&
-      uartTxStruct->current_msg.data != NULL) {
-    // 在中断中释放内存
-    vPortFree(uartTxStruct->current_msg.data);
-    uartTxStruct->current_msg.data = NULL;
-  }
-  // 2. 检查发送队列中是否有下一块数据
-  if (xQueueReceiveFromISR(uartTxStruct->xTxQueue, &next_msg,
-                           &xHigherPriorityTaskWoken) == pdPASS) {
-    // 3. 启动下一块数据的发送 (接力)
-    uartTxStruct->current_msg = next_msg;
-    HAL_UART_Transmit_DMA(s_huart, next_msg.data, next_msg.size);
-  }
-  // 4. 任务调度 检查是否有高优先级任务被唤醒。
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        /* D-Cache: 若 MCU 需要，在这里清理缓存 */
+        /* SCB_CleanDCache_by_Addr((uint32_t*)uart->tx_local_buf, xReceived); */
+
+        /* 启动 DMA（任务上下文，HAL safe） */
+        if (HAL_UART_Transmit_DMA(uart->huart, uart->tx_local_buf, (uint16_t)xReceived) == HAL_OK)
+        {
+            /* 等待 ISR 通知发送完成 */
+            ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+        else
+        {
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
+    }
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-  Uart1_Tx.TxCpltCallback(&Uart1_Tx, huart);
+/* ---------------- HAL DMA 完成回调（ISR） ----------------
+   注意：这个回调在 HAL 库中通常由 DMA 中断触发（ISR）
+*/
+void UartTxStruct_TxCpltCallback(UartTxStruct *uartTxStruct, UART_HandleTypeDef *huart)
+{
+    if (uartTxStruct == NULL || huart == NULL) return;
+    if (huart->Instance != uartTxStruct->huart->Instance) return;
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    /* 用结构体保存的任务句柄通知对应任务 */
+    vTaskNotifyGiveFromISR(uartTxStruct->xTxDriveTaskHandle, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
+
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+    /* 转发给我们的模块（如果有多个实例，需要判断实例或循环查找） */
+    Uart1_Tx.UartTxStruct_TxCpltCallback(&Uart1_Tx, huart);
+}
+
+/* ---------------- printf 重定向示例（把 printf 写入 StreamBuffer） ----------------
+   适用于 newlib _write 或 retarget 方案。下面是 newlib 的 _write 示例。
+*/
+int _write(int file, char *ptr, int len)
+{
+    /* 非阻塞写入 debug stream（避免在 printf 中死锁系统） */
+    Uart1_Tx.Uart_Send(&Uart1_Tx,(const uint8_t *)ptr, (size_t)len);
+    return len;
+}
+
+
+
