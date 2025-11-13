@@ -65,8 +65,8 @@ const osThreadAttr_t sensor_task_attributes = {
 osThreadId_t UartDebugTaskHandle;
 const osThreadAttr_t UartDebugTask_attributes = {
   .name = "UartDebugTask",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_read_APDS9 */
 osThreadId_t Task_read_APDS9Handle;
@@ -79,7 +79,7 @@ const osThreadAttr_t Task_read_APDS9_attributes = {
 osThreadId_t Task_Read_LIS3DHandle;
 const osThreadAttr_t Task_Read_LIS3D_attributes = {
   .name = "Task_Read_LIS3D",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_read_PCF85 */
@@ -87,13 +87,20 @@ osThreadId_t Task_read_PCF85Handle;
 const osThreadAttr_t Task_read_PCF85_attributes = {
   .name = "Task_read_PCF85",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for StartWk2114task */
 osThreadId_t StartWk2114taskHandle;
 const osThreadAttr_t StartWk2114task_attributes = {
   .name = "StartWk2114task",
   .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Task_finger */
+osThreadId_t Task_fingerHandle;
+const osThreadAttr_t Task_finger_attributes = {
+  .name = "Task_finger",
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -109,6 +116,7 @@ void Task_Read_APDS9900(void *argument);
 void Task_Read_LIS3DH(void *argument);
 void Task_Read_PCF8563(void *argument);
 void StartWk2114Task(void *argument);
+void Task_Finger(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -159,6 +167,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of StartWk2114task */
   StartWk2114taskHandle = osThreadNew(StartWk2114Task, NULL, &StartWk2114task_attributes);
+
+  /* creation of Task_finger */
+  Task_fingerHandle = osThreadNew(Task_Finger, NULL, &Task_finger_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -294,6 +305,24 @@ __weak void StartWk2114Task(void *argument)
     osDelay(1);
   }
   /* USER CODE END StartWk2114Task */
+}
+
+/* USER CODE BEGIN Header_Task_Finger */
+/**
+* @brief Function implementing the Task_finger thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_Finger */
+__weak void Task_Finger(void *argument)
+{
+  /* USER CODE BEGIN Task_Finger */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_Finger */
 }
 
 /* Private application code --------------------------------------------------*/

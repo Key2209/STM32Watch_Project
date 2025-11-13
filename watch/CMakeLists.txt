@@ -46,7 +46,15 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
+
+
+
 # Add sources to executable
+
+
+
+
+
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     APP/Key_class.c
@@ -57,15 +65,18 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     APP/LIS3DH.c
     APP/PCF8563.c
 
-    APP/WK2114.c
-
+    # APP/WK2114.c
+    APP/finger.c
+    APP/wk2xxx.c
 
 
     TASK/Sensor_Task.c
     TASK/Uart_Task.c
     TASK/WK2114_Task.c
+    TASK/Finger_Task.c
+    TASK/GPS_Task.c
 
-    
+
 )
 
 # Add include paths
@@ -73,6 +84,8 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     APP
     TASK
+    
+
 )
 
 # Add project symbols (macros)

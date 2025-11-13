@@ -1,4 +1,5 @@
 #include "uart_app.h"
+#include "wk2xxx.h"
 // --- 全局和静态变量 ---
 // QueueHandle_t xRxDataQueue = NULL;
 // UART_HandleTypeDef *s_huart = NULL;
@@ -276,6 +277,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
     /* 转发给我们的模块（如果有多个实例，需要判断实例或循环查找） */
     Uart1_Tx.UartTxStruct_TxCpltCallback(&Uart1_Tx, huart);
+
+
+    
 }
 
 /* ---------------- printf 重定向示例（把 printf 写入 StreamBuffer） ----------------

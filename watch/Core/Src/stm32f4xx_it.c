@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "uart_app.h"
 #include "WK2114.h"
+#include "wk2xxx.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -176,7 +177,11 @@ void DebugMon_Handler(void)
 void EXTI2_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI2_IRQn 0 */
-  WK2114_IRQ_Handler();
+  //WK2114_IRQ_Handler();
+
+
+
+
   /* USER CODE END EXTI2_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(EXTI_WK2114_IRQn_Pin);
   /* USER CODE BEGIN EXTI2_IRQn 1 */
@@ -261,10 +266,16 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 
+
+    //   if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+    // {
+    //     __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+        Uart1_Rx.UART_IDLE_IRQHandler(&Uart1_Rx,&huart1);
+    //}
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-  Uart1_Rx.UART_IDLE_IRQHandler(&Uart1_Rx,&huart1);
+  
   /* USER CODE END USART1_IRQn 1 */
 }
 

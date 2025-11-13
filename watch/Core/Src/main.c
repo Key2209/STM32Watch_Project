@@ -30,6 +30,9 @@
 #include "LIS3DH.h"
 #include "uart_app.h"
 #include "PCF8563.h"
+#include "WK2114.h"
+#include "wk2xxx.h"
+#include "finger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -128,9 +131,13 @@ int main(void)
   // === 对象创建完毕 ===
 
   UartTxStruct_Init(&Uart1_Tx, &huart1); // 初始化 UART1 发送结构体
+  UartRxStruct_Init(&Uart1_Rx,512,&huart1,10);// 初始化 UART1 DMA 接收
   APDS9900_Init(&hi2c1);
   LIS3DH_Init(&hi2c1, 100);
   PCF8563_Init(&hi2c1);
+
+
+  //WK2114_Init_All(115200);
   /* USER CODE END 2 */
 
   /* Init scheduler */

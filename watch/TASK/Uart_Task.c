@@ -17,9 +17,9 @@ void UART_Debug_RxProcessTask(void *pvParameters){
 
   UartRxMsg_t received_msg;
 
-  // 假设 huart1 已经初始化
-    extern UART_HandleTypeDef huart1;
-    UartRxStruct_Init(&Uart1_Rx,512,&huart1,10);// 初始化 UART1 DMA 接收
+
+
+  // UartRxStruct_Init(&Uart1_Rx,512,&huart1,10);// 初始化 UART1 DMA 接收
 
   for (;;) {
     // 1. 阻塞等待 IDLE 中断发送的通知 (portMAX_DELAY 表示永久等待)
@@ -45,8 +45,10 @@ void UART_Debug_RxProcessTask(void *pvParameters){
     //   // 5. ** 执行耗时的业务逻辑！ **
     // UART_DMA_Send(&Uart1_Tx, (uint8_t *)local_processing_buffer, strlen((char*)local_processing_buffer), 100,
     //               false);
-
-        printf("Received Data (%d bytes): %s", data_len, local_processing_buffer);
+        
+        Uart1_Tx.Uart_Send(&Uart1_Tx, local_processing_buffer, data_len);
+        
+        //printf("Received Data (%d bytes): %s\n", data_len, local_processing_buffer);
         // 4. !!! 关键：释放堆内存 !!!
     vPortFree(local_processing_buffer);
     }
@@ -54,6 +56,3 @@ void UART_Debug_RxProcessTask(void *pvParameters){
 
   osDelay(pdMS_TO_TICKS(1));
 }
-
-
-

@@ -15,12 +15,21 @@
 #include <string.h>
 #include <sys/_intsup.h>
 #include "PCF8563.h"
+#include "WK2114.h"
+#include "wk2xxx.h"
+#include "finger.h"
 Key_t key1;
 Key_t key2;
 Key_t key3;
 
-void KEY_SHORT_CLICK_Callback(void *arg) {}
-void KEY_LONG_PRESS_Callback(void *arg) {}
+void KEY_SHORT_CLICK_Callback(void *arg) {//验证指纹
+  finger_identify();
+  Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t *)"KEY2 Short Clicked!\n", 21);
+}
+void KEY_LONG_PRESS_Callback(void *arg) {//录入指纹
+  Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t *)"KEY3 Long Pressed!\n", 21);
+  finger_enroll(2);
+}
 
 float lux_value = 0.0f;
 float test = 0.0f;
@@ -29,27 +38,31 @@ float float_test = 9.375;
 char str_test[] = "float_test";
 HAL_StatusTypeDef apd_status = HAL_BUSY;
 int flag = 1;
+void my_uart1_handler(char byte) {
+  // 处理接收到的字节 (例如存入缓冲区)
+  // 这里简单打印接收到的字节
+  printf("WK2114 CH1 Received: 0x%02X ('%c')\n", byte, byte);
+}
 void SensorTask(void *argument) {
   /* USER CODE BEGIN SensorTask */
   /* Infinite loop */
-  // Key_Init(&key1, KEY1_GPIO_Port, KEY1_Pin, GPIO_PIN_RESET, 1000, "KEY1");
-  // Key_Init(&key2, KEY2_GPIO_Port, KEY2_Pin, GPIO_PIN_RESET, 1000, "KEY2");
-  // Key_Init(&key3, KEY3_GPIO_Port, KEY3_Pin, GPIO_PIN_RESET, 1000, "KEY3");
-  // Key_RegisterCallback(&key2, KEY_EVENT_SHORT_CLICK,
-  // KEY_SHORT_CLICK_Callback,
-  //                      NULL);
-  // Key_RegisterCallback(&key3, KEY_EVENT_LONG_PRESS, KEY_LONG_PRESS_Callback,
-  //                      NULL);
+  //Key_Init(&key1, KEY1_GPIO_Port, KEY1_Pin, GPIO_PIN_RESET, 1000, "KEY1");
+  Key_Init(&key2, KEY2_GPIO_Port, KEY2_Pin, GPIO_PIN_RESET, 1000, "KEY2");
+  Key_Init(&key3, KEY3_GPIO_Port, KEY3_Pin, GPIO_PIN_RESET, 1000, "KEY3");
+  Key_RegisterCallback(&key2, KEY_EVENT_SHORT_CLICK,
+  KEY_SHORT_CLICK_Callback,
+                       NULL);
+  Key_RegisterCallback(&key3, KEY_EVENT_LONG_PRESS, KEY_LONG_PRESS_Callback,
+                       NULL);
 
-  // 传感器初始化 (阻塞式)
+  
 
   for (;;) {
     // //轮询按键状态
-    // Key_Process(&key1);
-    // Key_Process(&key2);
-    // Key_Process(&key3);
-
-    // 任务周期延迟
+    //Key_Process(&key1);
+    Key_Process(&key2);
+    Key_Process(&key3);
+    
     osDelay(pdMS_TO_TICKS(500));
   }
   /* USER CODE END SensorTask */
@@ -83,10 +96,13 @@ void Task_Read_APDS9900(void *argument) {
     static int count = 0;
     count++;
     if (count % 20 == 0) {
-      printf("---- APDS9900 Read Count: %d ----\n", count / 20);
-      printf("CH0_ALS: %.2f\n", (float)CH0_Data);
-      printf("CH1_ALS: %.2f\n", (float)CH1_Data);
-      printf("Proximity: %.2f\n", (float)Proximity_Data);
+      char data_str[100];
+      sprintf(data_str,
+              "CH0_ALS: %.2f\r\nCH1_ALS: %.2f\r\n"
+              "Proximity: %.2f\r\n",
+               (float)CH0_Data, (float)CH1_Data,
+              (float)Proximity_Data);
+              Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t*)data_str, strlen(data_str));
       count = 0;
     }
 
@@ -111,16 +127,24 @@ void Task_Read_LIS3DH(void *argument) {
       static int count = 0;
       count++;
       if (count % 20 == 0) {
-        printf("Acc [g]: X=%.3f, Y=%.3f, Z=%.3f\n", Accel_Data.x_g,
-               Accel_Data.y_g, Accel_Data.z_g);
+        char data_str[50];
+        sprintf(data_str, "Acc [g]: X=%.3f, Y=%.3f, Z=%.3f\r\n", Accel_Data.x_g,
+                Accel_Data.y_g, Accel_Data.z_g);
+        uint16_t len = strlen(data_str);
+        Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t*)data_str, len);
         count = 0;
       }
       // 3. 打印结果
 
     } else if (status == osErrorTimeout) {
-      printf("Error: LIS3DH Read Timeout!\n");
+      char data_str[] = "Error: LIS3DH Read Timeout!\r\n";
+      Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t*)data_str, strlen(data_str));
+
     } else {
-      printf("Error: LIS3DH Read Failed (Status: %d)!\n", (int)status);
+      char data_str[50];
+      sprintf(data_str, "Error: LIS3DH Read Failed (Status: %d)!\r\n",
+              (int)status);
+      Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t*)data_str, strlen(data_str));
     }
 
     // 4. 延时，出让 CPU
@@ -141,9 +165,12 @@ void Task_Read_PCF8563(void *argument) {
       static int count = 0;
       count++;
       if (count % 20 == 0) {
-      printf("RTC Time: 20%02d-%02d-%02d %02d:%02d:%02d\n", rtc_time.year,
-           rtc_time.month, rtc_time.day, rtc_time.hours, rtc_time.minutes,
-           rtc_time.seconds);
+
+      char time_str[60];
+      sprintf(time_str, "RTC Time: 20%02d-%02d-%02d %02d:%02d:%02d\r\n", rtc_time.year,
+             rtc_time.month, rtc_time.day, rtc_time.hours, rtc_time.minutes,
+             rtc_time.seconds);
+             Uart1_Tx.Uart_Send(&Uart1_Tx, (uint8_t*)time_str, strlen(time_str));
         count = 0;
       }
 
