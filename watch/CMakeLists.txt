@@ -53,7 +53,7 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 
 
-
+file(GLOB_RECURSE LVGL_SOURCES lvgl/*.c)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
@@ -70,22 +70,29 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     APP/wk2xxx.c
 
 
+    APP/LCD/ST7789.c
+    APP/LCD/ft6x36.c
+
     TASK/Sensor_Task.c
     TASK/Uart_Task.c
     TASK/WK2114_Task.c
     TASK/Finger_Task.c
     TASK/GPS_Task.c
-
-
+    TASK/LVGL_Task.c
+    ${LVGL_SOURCES}
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     APP
+    APP/LCD
     TASK
-    
-
+    .
+    lvgl
+    lvgl/src
+    lvgl/examples/porting
+    lvgl/demos/widgets
 )
 
 # Add project symbols (macros)

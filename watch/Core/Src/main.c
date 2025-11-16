@@ -21,8 +21,10 @@
 #include "cmsis_os.h"
 #include "dma.h"
 #include "i2c.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,6 +35,12 @@
 #include "WK2114.h"
 #include "wk2xxx.h"
 #include "finger.h"
+#include "ST7789.h"
+#include "ft6x36.h"
+
+#include "lvgl.h"                // 它为整个LVGL提供了更完整的头文件引用
+#include "lv_port_disp.h"        // LVGL的显示支持
+#include "lv_port_indev.h"       // LVGL的触屏支持
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +75,8 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
 
 /* USER CODE END 0 */
 
@@ -103,6 +113,8 @@ int main(void)
   MX_I2C1_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_FSMC_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
   // === 在此处动态创建 RTOS 对象 ===
@@ -134,8 +146,30 @@ int main(void)
   UartRxStruct_Init(&Uart1_Rx,512,&huart1,10);// 初始化 UART1 DMA 接收
   APDS9900_Init(&hi2c1);
   LIS3DH_Init(&hi2c1, 100);
-  PCF8563_Init(&hi2c1);
 
+  PCF8563_Init(&hi2c1);
+  ft6x36_init();
+  if (St7789_init() == 0)
+  {
+    // 初始化成功，背光已打开，屏幕已清屏为黑色
+    // 2. 简单的绘图测试
+    
+    // // 填充矩形 (红色)
+    // St7789_FillColor(10, 10, 100, 100, 0xF800); 
+
+    // // 绘制单个点 (蓝色)
+    // St7789_DrawPoint(150, 150, 0x001F);
+    
+    // // 填充整个屏幕 (绿色)
+    // osDelay(500);
+    St7789_FillColor(0, 0, screen_dev.wide - 1, screen_dev.high - 1, 0xFFFF);
+
+    // 绘制一个点
+    //St7789_DrawPoint(100, 100, 0xFFFF); // 白色
+    
+    // 3. 字体绘制 (需要您根据字库文件添加额外的绘图函数，例如 DrawChar, DrawString 等)
+    // 驱动核心文件只提供了底层操作，高级绘图函数需要您基于St7789_DrawPoint自行实现。
+  }
 
   //WK2114_Init_All(115200);
   /* USER CODE END 2 */
@@ -222,7 +256,10 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-
+    if (htim->Instance == TIM14)
+  {
+    lv_tick_inc(1);
+  }
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM14)
   {

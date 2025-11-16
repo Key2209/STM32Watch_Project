@@ -15,6 +15,7 @@
     "files.associations": {
         "wk2114.h": "c",
         "string.h": "c",
-        "compare": "c"
+        "compare": "c",
+        "ST7789.C": "cpp"
     }
 }

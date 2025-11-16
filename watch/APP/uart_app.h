@@ -68,7 +68,7 @@ void Read_From_Circular_Buffer(UartRxStruct *uartRxStruct, uint8_t *buffer,
 
 
 /* --- 配置区域 --- */
-#define UART_STREAM_SIZE    1024U       // stream buffer 总容量
+#define UART_STREAM_SIZE    512U       // stream buffer 总容量
 #define UART_LOCAL_BUF_SZ   256U        // tx task 本地缓冲区大小
 #define UART_TASK_STACK     512
 #define UART_TASK_PRIO      (tskIDLE_PRIORITY + 2)

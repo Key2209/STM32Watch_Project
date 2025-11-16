@@ -2,6 +2,7 @@
 #include "Sensor_Task.h"
 #include "APDS9900.h"
 #include "LIS3DH.h"
+#include "cmsis_os2.h"
 #include "i2c.h"
 #include "i2c_dma_manager.h"
 #include "key_class.h"
@@ -18,6 +19,8 @@
 #include "WK2114.h"
 #include "wk2xxx.h"
 #include "finger.h"
+#include "ST7789.h"
+#include "ft6x36.h"
 Key_t key1;
 Key_t key2;
 Key_t key3;
@@ -55,15 +58,14 @@ void SensorTask(void *argument) {
   Key_RegisterCallback(&key3, KEY_EVENT_LONG_PRESS, KEY_LONG_PRESS_Callback,
                        NULL);
 
-  
 
   for (;;) {
     // //轮询按键状态
     //Key_Process(&key1);
     Key_Process(&key2);
     Key_Process(&key3);
-    
-    osDelay(pdMS_TO_TICKS(500));
+    ft6x36_TouchScan();
+    osDelay(pdMS_TO_TICKS(50));
   }
   /* USER CODE END SensorTask */
 }

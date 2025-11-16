@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define KEY3_GPIO_Port GPIOA
 #define motor1027_Pin GPIO_PIN_0
 #define motor1027_GPIO_Port GPIOB
+#define LCD_PWM_Pin GPIO_PIN_1
+#define LCD_PWM_GPIO_Port GPIOB
 #define WK2114_REST_Pin GPIO_PIN_8
 #define WK2114_REST_GPIO_Port GPIOA
 #define debug_uart_tx_Pin GPIO_PIN_9
@@ -82,6 +84,9 @@ void Error_Handler(void);
 #define APDS_SCL_GPIO_Port GPIOB
 #define APDS_SDA_Pin GPIO_PIN_9
 #define APDS_SDA_GPIO_Port GPIOB
+#define LCD_INT_Pin GPIO_PIN_1
+#define LCD_INT_GPIO_Port GPIOE
+#define LCD_INT_EXTI_IRQn EXTI1_IRQn
 
 /* USER CODE BEGIN Private defines */
 

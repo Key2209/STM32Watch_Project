@@ -17,7 +17,10 @@ static volatile bool g_i2c_error = false;
 /**
  * @brief 线程安全的 I2C 内存写操作 (DMA)
  */
-osStatus_t I2C_Manager_Write_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size,uint32_t timeout)
+osStatus_t I2C_Manager_Write_DMA(I2C_HandleTypeDef *hi2c, 
+uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, 
+uint8_t *pData, uint16_t Size,
+uint32_t timeout)
 {
     HAL_StatusTypeDef hal_status;
     osStatus_t os_status;

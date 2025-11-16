@@ -58,49 +58,56 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t sensor_taskHandle;
 const osThreadAttr_t sensor_task_attributes = {
   .name = "sensor_task",
-  .stack_size = 512 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for UartDebugTask */
 osThreadId_t UartDebugTaskHandle;
 const osThreadAttr_t UartDebugTask_attributes = {
   .name = "UartDebugTask",
-  .stack_size = 512 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_read_APDS9 */
 osThreadId_t Task_read_APDS9Handle;
 const osThreadAttr_t Task_read_APDS9_attributes = {
   .name = "Task_read_APDS9",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_Read_LIS3D */
 osThreadId_t Task_Read_LIS3DHandle;
 const osThreadAttr_t Task_Read_LIS3D_attributes = {
   .name = "Task_Read_LIS3D",
-  .stack_size = 512 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_read_PCF85 */
 osThreadId_t Task_read_PCF85Handle;
 const osThreadAttr_t Task_read_PCF85_attributes = {
   .name = "Task_read_PCF85",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for StartWk2114task */
 osThreadId_t StartWk2114taskHandle;
 const osThreadAttr_t StartWk2114task_attributes = {
   .name = "StartWk2114task",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Task_finger */
 osThreadId_t Task_fingerHandle;
 const osThreadAttr_t Task_finger_attributes = {
   .name = "Task_finger",
-  .stack_size = 512 * 4,
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for lvgl_Task */
+osThreadId_t lvgl_TaskHandle;
+const osThreadAttr_t lvgl_Task_attributes = {
+  .name = "lvgl_Task",
+  .stack_size = 2048 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -117,6 +124,7 @@ void Task_Read_LIS3DH(void *argument);
 void Task_Read_PCF8563(void *argument);
 void StartWk2114Task(void *argument);
 void Task_Finger(void *argument);
+void Task_LVGL(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -170,6 +178,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of Task_finger */
   Task_fingerHandle = osThreadNew(Task_Finger, NULL, &Task_finger_attributes);
+
+  /* creation of lvgl_Task */
+  lvgl_TaskHandle = osThreadNew(Task_LVGL, NULL, &lvgl_Task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -323,6 +334,24 @@ __weak void Task_Finger(void *argument)
     osDelay(1);
   }
   /* USER CODE END Task_Finger */
+}
+
+/* USER CODE BEGIN Header_Task_LVGL */
+/**
+* @brief Function implementing the lvgl_Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Task_LVGL */
+__weak void Task_LVGL(void *argument)
+{
+  /* USER CODE BEGIN Task_LVGL */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Task_LVGL */
 }
 
 /* Private application code --------------------------------------------------*/
