@@ -18,6 +18,8 @@ set(MX_Include_Dirs
     ${CMAKE_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/CMSIS/DSP/Include
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/ARM/DSP/Inc
 )
 
 # STM32CubeMX generated application sources
@@ -28,6 +30,7 @@ set(MX_Application_Src
     ${CMAKE_SOURCE_DIR}/Core/Src/dma.c
     ${CMAKE_SOURCE_DIR}/Core/Src/fsmc.c
     ${CMAKE_SOURCE_DIR}/Core/Src/i2c.c
+    ${CMAKE_SOURCE_DIR}/Core/Src/spi.c
     ${CMAKE_SOURCE_DIR}/Core/Src/tim.c
     ${CMAKE_SOURCE_DIR}/Core/Src/usart.c
     ${CMAKE_SOURCE_DIR}/Core/Src/stm32f4xx_it.c
@@ -63,6 +66,7 @@ set(STM32_Drivers_Src
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pccard.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c
+    ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
     ${CMAKE_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
 )
 
@@ -85,9 +89,13 @@ set(FreeRTOS_Src
 # Link directories setup
 set(MX_LINK_DIRS
 
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/CMSIS/DSP/Lib/GCC
+    ${CMAKE_SOURCE_DIR}/Middlewares/ST/ARM/DSP/Lib
 )
 # Project static libraries
-set(MX_LINK_LIBS 
+set(MX_LINK_LIBS  
+	:libarm_cortexM4lf_math.a 
+	:libarm_cortexM4lf_math.a
     STM32_Drivers
     FreeRTOS	
 )

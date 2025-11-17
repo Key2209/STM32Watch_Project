@@ -1,5 +1,6 @@
 #ifndef INC_I2C_DMA_MANAGER_H_
 #define INC_I2C_DMA_MANAGER_H_
+#include "main.h"
 #include "FreeRTOS.h"          // 必须最先包含
 #include "stm32f4xx_hal.h" // 
 #include "cmsis_os.h"
@@ -39,3 +40,4 @@ osStatus_t I2C_Manager_Read_DMA(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, ui
 // (如果CubeMX没生成，就放在 i2c_dma_manager.c)
 
 #endif /* INC_I2C_DMA_MANAGER_H_ */
+

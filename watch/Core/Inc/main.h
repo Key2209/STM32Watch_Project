@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define debug_uart_tx_GPIO_Port GPIOA
 #define debug_uart_rx_Pin GPIO_PIN_10
 #define debug_uart_rx_GPIO_Port GPIOA
+#define W25QXX_CS_Pin GPIO_PIN_15
+#define W25QXX_CS_GPIO_Port GPIOA
 #define relay1_Pin GPIO_PIN_12
 #define relay1_GPIO_Port GPIOC
 #define EXTI_WK2114_IRQn_Pin GPIO_PIN_2
@@ -84,6 +86,8 @@ void Error_Handler(void);
 #define APDS_SCL_GPIO_Port GPIOB
 #define APDS_SDA_Pin GPIO_PIN_9
 #define APDS_SDA_GPIO_Port GPIOB
+#define SPI_CS_PSRAM_Pin GPIO_PIN_0
+#define SPI_CS_PSRAM_GPIO_Port GPIOE
 #define LCD_INT_Pin GPIO_PIN_1
 #define LCD_INT_GPIO_Port GPIOE
 #define LCD_INT_EXTI_IRQn EXTI1_IRQn

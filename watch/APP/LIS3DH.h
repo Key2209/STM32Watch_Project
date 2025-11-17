@@ -32,6 +32,16 @@ typedef struct {
     float z_g;
 } LIS3DH_Data_t;
 
+typedef struct{
+  unsigned char tumbleEnableStatus : 1;
+  unsigned char stepEnableStatus : 1;
+  unsigned char SedentaryEnableStatus : 1;
+  unsigned char tumbleStatus : 1;
+  unsigned char SedentaryStatus : 1;
+  unsigned short stepCount;
+  unsigned char SedentaryInterval;
+  unsigned short SedentaryTime;
+}lis3dh;
 
 // -------------------------------------------------------------------
 // 函数声明
@@ -48,5 +58,17 @@ HAL_StatusTypeDef LIS3DH_Init(I2C_HandleTypeDef *hi2c, uint32_t timeout);
  * @retval osStatus_t: osOK 或错误代码
  */
 osStatus_t LIS3DH_Read_Acc_DMA(I2C_HandleTypeDef *hi2c, LIS3DH_Data_t *data, uint32_t timeout);
+extern LIS3DH_Data_t Accel_Data;
+int lis3dh_init(void);
+void get_lis3dhInfo(float *accX, float *accY, float *accZ);
+int lis3dh_tumble(float x, float y, float z);
+int run_lis3dh_arithmetic(void);
+void set_lis3dh_enableStatus(unsigned char cmd);
+unsigned char get_lis3dh_enableStatus(void);
+int get_lis3dh_tumbleStatus(void);
+int get_lis3dh_stepCount(void);
+void del_lis3dh_stepCount(void);
+void set_lis3dh_SedentaryTime(unsigned short interval, unsigned short time);
+int get_lis3dh_SedentaryStatus(void);
 
 #endif // LIS3DH_H

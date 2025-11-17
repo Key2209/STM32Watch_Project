@@ -69,10 +69,14 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     APP/finger.c
     APP/wk2xxx.c
 
-
+    APP/SRAM_Driver.c
+    APP/bsp_dwt.c
     APP/LCD/ST7789.c
     APP/LCD/ft6x36.c
-
+    APP/i2c_recovery.c
+    APP/LTE/at_core.c
+    APP/LTE/w25qxx_hal.c
+    app/LTE/ec20_zhiyun.c
     TASK/Sensor_Task.c
     TASK/Uart_Task.c
     TASK/WK2114_Task.c
@@ -87,6 +91,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     APP
     APP/LCD
+    APP/LTE
     TASK
     .
     lvgl

@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 #include "dma.h"
 #include "i2c.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -37,10 +38,17 @@
 #include "finger.h"
 #include "ST7789.h"
 #include "ft6x36.h"
-
+#include "i2c_recovery.h"
+#include "SRAM_Driver.h"
+#include "bsp_dwt.h"
 #include "lvgl.h"                // 它为整个LVGL提供了更完整的头文件引用
 #include "lv_port_disp.h"        // LVGL的显示支持
 #include "lv_port_indev.h"       // LVGL的触屏支持
+#include "at_core.h"
+#include "w25qxx_hal.h"
+#include "ec20_zhiyun.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,8 +123,11 @@ int main(void)
   MX_USART2_UART_Init();
   MX_FSMC_Init();
   MX_TIM6_Init();
+  MX_SPI1_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
+  DWT_Init(168); // 初始化 DWT 延时函数，参数为 CPU 频率，单位 MHz
   // === 在此处动态创建 RTOS 对象 ===
 
   // 1. 创建互斥锁 (Mutex)
@@ -141,6 +152,10 @@ int main(void)
   }
 
   // === 对象创建完毕 ===
+HAL_I2C_DeInit(&hi2c1);
+DWT_Delay(1e-3f); // 1ms
+I2C_Bus_Clock_Pulse_And_Stop();
+HAL_I2C_Init(&hi2c1);
 
   UartTxStruct_Init(&Uart1_Tx, &huart1); // 初始化 UART1 发送结构体
   UartRxStruct_Init(&Uart1_Rx,512,&huart1,10);// 初始化 UART1 DMA 接收
@@ -148,6 +163,7 @@ int main(void)
   LIS3DH_Init(&hi2c1, 100);
 
   PCF8563_Init(&hi2c1);
+  //SRAM_Init_Sequence();
   ft6x36_init();
   if (St7789_init() == 0)
   {
@@ -162,7 +178,7 @@ int main(void)
     
     // // 填充整个屏幕 (绿色)
     // osDelay(500);
-    St7789_FillColor(0, 0, screen_dev.wide - 1, screen_dev.high - 1, 0xFFFF);
+    //St7789_FillColor(0, 0, screen_dev.wide - 1, screen_dev.high - 1, 0xFFFF);
 
     // 绘制一个点
     //St7789_DrawPoint(100, 100, 0xFFFF); // 白色
@@ -171,6 +187,10 @@ int main(void)
     // 驱动核心文件只提供了底层操作，高级绘图函数需要您基于St7789_DrawPoint自行实现。
   }
 
+
+// W25QXX_Init();
+// AT_Core_Init();
+//Initialize_EC20_System();
   //WK2114_Init_All(115200);
   /* USER CODE END 2 */
 

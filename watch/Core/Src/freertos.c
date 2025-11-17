@@ -110,6 +110,13 @@ const osThreadAttr_t lvgl_Task_attributes = {
   .stack_size = 2048 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for I2C_Try_Recover */
+osThreadId_t I2C_Try_RecoverHandle;
+const osThreadAttr_t I2C_Try_Recover_attributes = {
+  .name = "I2C_Try_Recover",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -125,6 +132,7 @@ void Task_Read_PCF8563(void *argument);
 void StartWk2114Task(void *argument);
 void Task_Finger(void *argument);
 void Task_LVGL(void *argument);
+void I2C_Try_Recovery_Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -181,6 +189,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of lvgl_Task */
   lvgl_TaskHandle = osThreadNew(Task_LVGL, NULL, &lvgl_Task_attributes);
+
+  /* creation of I2C_Try_Recover */
+  I2C_Try_RecoverHandle = osThreadNew(I2C_Try_Recovery_Task, NULL, &I2C_Try_Recover_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -352,6 +363,24 @@ __weak void Task_LVGL(void *argument)
     osDelay(1);
   }
   /* USER CODE END Task_LVGL */
+}
+
+/* USER CODE BEGIN Header_I2C_Try_Recovery_Task */
+/**
+* @brief Function implementing the I2C_Try_Recover thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_I2C_Try_Recovery_Task */
+__weak void I2C_Try_Recovery_Task(void *argument)
+{
+  /* USER CODE BEGIN I2C_Try_Recovery_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END I2C_Try_Recovery_Task */
 }
 
 /* Private application code --------------------------------------------------*/

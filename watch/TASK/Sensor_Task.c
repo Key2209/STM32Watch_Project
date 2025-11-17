@@ -7,6 +7,7 @@
 #include "i2c_dma_manager.h"
 #include "key_class.h"
 #include "main.h"
+#include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_uart.h"
 #include "uart_app.h"
@@ -21,6 +22,7 @@
 #include "finger.h"
 #include "ST7789.h"
 #include "ft6x36.h"
+#include "SRAM_Driver.h"
 Key_t key1;
 Key_t key2;
 Key_t key3;
@@ -58,7 +60,11 @@ void SensorTask(void *argument) {
   Key_RegisterCallback(&key3, KEY_EVENT_LONG_PRESS, KEY_LONG_PRESS_Callback,
                        NULL);
 
-
+    // 1. 创建信号量（在 FreeRTOS 初始化后调用）
+    if (xSramDmaSemaphore == NULL) {
+        xSramDmaSemaphore = xSemaphoreCreateBinary();
+    }
+    
   for (;;) {
     // //轮询按键状态
     //Key_Process(&key1);
@@ -113,7 +119,7 @@ void Task_Read_APDS9900(void *argument) {
   }
 }
 
-LIS3DH_Data_t Accel_Data;
+
 
 void Task_Read_LIS3DH(void *argument) {
   // 1. 初始化传感器
@@ -121,9 +127,10 @@ void Task_Read_LIS3DH(void *argument) {
   //LIS3DH_Init(&hi2c1, 1000);
   for (;;) {
 
+
     // // 2. 读取加速度数据 (使用 DMA 模式，阻塞等待 100ms)
     osStatus_t status = LIS3DH_Read_Acc_DMA(&hi2c1, &Accel_Data, 100);
-
+    run_lis3dh_arithmetic();
     if (status == osOK) {
 
       static int count = 0;

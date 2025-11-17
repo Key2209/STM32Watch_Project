@@ -23,7 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "ft6x36.h"
-
+#include "at_core.h"
 extern UART_HandleTypeDef huart2; /* 工程里由 CubeMX 生成 */
 
 /* recv 单字节中断缓冲与标志 */
@@ -504,11 +504,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 }
 
 /* WK2114 串口模块的接收回调 */
+extern UART_HandleTypeDef huart4;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart2) {
         Wk2114_UART_RxCpltCallback(huart);
     }
+
+
 }
 
 /* end of file */
